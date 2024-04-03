@@ -224,28 +224,41 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 		<script src="/static/scripts.js"></script>
 	</head>
 	<body>
-	<div class="container">
-		<h1>UPLOAD FILE</h1>
-		<input type="file" id="fileInput">
-        <button onclick="uploadFile()">Upload</button>
-	</div>
+		<div class="container1">
+			<h1>UPLOAD FILE</h1>
+			<input type="file" id="fileInput">
+			<button onclick="uploadFile()">Upload</button>
+		</div>
 
-    <div class="container">
-        <h1>Files in Google Drive</h1>
-        <ul id="fileList">
-            {{range .}}
-            <li>
-                {{if eq .MimeType "application/vnd.google-apps.folder"}}
-                    <a href="/folder?id={{.Id}}">{{.Name}}</a>
-                {{else}}
-                    <a href="/download?id={{.Id}}">{{.Name}}</a>
-                {{end}}
-            </li>
-            {{end}}
-        </ul>
-    </div>
-    <script src="/static/scripts.js"></script>
-</body>
+		<div class="container">
+			<div>
+				<h1>Folders in Google Drive</h1>
+				<ul id="fileList">
+					{{range .}}
+					<li>
+						{{if eq .MimeType "application/vnd.google-apps.folder"}}
+							<a href="/folder?id={{.Id}}">{{.Name}}</a>
+						{{end}}
+					</li>
+					{{end}}
+				</ul>
+			</div>
+
+			<div>
+				<h1>Files in Google Drive</h1>
+				<ul id="fileList">
+					{{range .}}
+					<li>
+						{{if and (not (eq .MimeType "application/vnd.google-apps.folder")) (not (eq .MimeType "application/vnd.google-apps.shortcut"))}}
+						<a href="/download?id={{.Id}}">{{.Name}}</a>
+						{{end}}
+					</li>
+					{{end}}
+				</ul>
+		</div>
+
+		<script src="/static/scripts.js"></script>
+	</body>
 
 	</html>
 	`

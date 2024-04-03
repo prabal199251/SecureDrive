@@ -14,6 +14,22 @@ body {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-gap: 25px; /* Adjust gap as needed */
+}
+
+.container > div {
+    overflow:scroll; /* Add this property to enable scrolling */
+}
+
+.container1 {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
