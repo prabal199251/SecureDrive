@@ -56,6 +56,14 @@ function uploadFile() {
     const file = fileInput.files[0];
     const formData = new FormData();
     formData.append('file', file);
+
+    // Get the current folder ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentFolderID = urlParams.get('id');
+
+    // Append the current folder ID to the upload request
+    formData.append('folderID', currentFolderID);
+
     fetch('/upload', {
         method: 'POST',
         body: formData
@@ -70,6 +78,7 @@ function uploadFile() {
     })
     .catch(error => console.error('Error uploading file:', error));
 }
+
 
 function moveFile(fileID, newParentID) {
     fetch(`/move?id=${fileID}&parentID=${newParentID}`)

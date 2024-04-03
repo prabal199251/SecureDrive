@@ -85,16 +85,17 @@ func main() {
 			return
 		}
 		defer file.Close()
-
+	
 		fileName := header.Filename
-		_, err = uploadFile(fileName, file)
+		folderID := r.FormValue("folderID") // Get the folderID from the request
+		_, err = uploadFile(fileName, file, folderID)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Unable to upload file: %v", err), http.StatusInternalServerError)
 			return
 		}
-
+	
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-	})
+	})	
 
 	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
 		fileID := r.URL.Query().Get("id")
@@ -161,14 +162,15 @@ func listItems(parentID string) ([]*drive.File, error) {
 	return items.Files, nil
 }
 
-func uploadFile(fileName string, file io.Reader) (*drive.File, error) {
-	driveFile := &drive.File{Name: fileName}
+func uploadFile(fileName string, file io.Reader, folderID string) (*drive.File, error) {
+	driveFile := &drive.File{Name: fileName, Parents: []string{folderID}} // Set the parent folder ID
 	_, err := srv.Files.Create(driveFile).Media(file).Do()
 	if err != nil {
 		return nil, err
 	}
 	return driveFile, nil
 }
+
 
 func downloadFile(fileID string) (string, error) {
 	file, err := srv.Files.Get(fileID).Fields("name").Do()
