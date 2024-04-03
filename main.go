@@ -37,13 +37,13 @@ func main() {
 			return
 		}
 
-		folders, err := listFolders()
+		items, err := listItems("")
 		if err != nil {
-			http.Error(w, fmt.Sprintf("Unable to list folders: %v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Unable to list items: %v", err), http.StatusInternalServerError)
 			return
 		}
 
-		renderHTML(w, folders)
+		renderHTML(w, items)
 	})
 
 	http.HandleFunc("/move", func(w http.ResponseWriter, r *http.Request) {
@@ -112,6 +112,17 @@ func main() {
 		http.ServeFile(w, r, fileName)
 	})
 
+	http.HandleFunc("/folder", func(w http.ResponseWriter, r *http.Request) {
+		folderID := r.URL.Query().Get("id")
+		items, err := listItems(folderID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Unable to list items: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		renderHTML(w, items)
+	})
+
 	http.HandleFunc("/oauth2callback", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		token, err := oauthConfig.Exchange(ctx, code)
@@ -137,21 +148,17 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func listFiles() ([]*drive.File, error) {
-	files, err := srv.Files.List().Fields("files(id, name)").Do()
-	if err != nil {
-		return nil, err
+func listItems(parentID string) ([]*drive.File, error) {
+	if parentID == "" {
+		parentID = "root"
 	}
-	return files.Files, nil
-}
 
-func listFolders() ([]*drive.File, error) {
-	query := "mimeType='application/vnd.google-apps.folder'"
-	folders, err := srv.Files.List().Q(query).Fields("files(id, name)").Do()
+	query := fmt.Sprintf("'%s' in parents", parentID)
+	items, err := srv.Files.List().Q(query).Fields("files(id, name, mimeType)").Do()
 	if err != nil {
 		return nil, err
 	}
-	return folders.Files, nil
+	return items.Files, nil
 }
 
 func uploadFile(fileName string, file io.Reader) (*drive.File, error) {
@@ -205,7 +212,7 @@ func deleteFile(fileID string) error {
 	return err
 }
 
-func renderHTML(w http.ResponseWriter, files []*drive.File) {
+func renderHTML(w http.ResponseWriter, items []*drive.File) {
 	html := `
 	<!DOCTYPE html>
 	<html>
@@ -217,34 +224,25 @@ func renderHTML(w http.ResponseWriter, files []*drive.File) {
 		<script src="/static/scripts.js"></script>
 	</head>
 	<body>
+	<div class="container">
+		<h1>UPLOAD FILE</h1>
+		<input type="file" id="fileInput">
+        <button onclick="uploadFile()">Upload</button>
+	</div>
+
     <div class="container">
         <h1>Files in Google Drive</h1>
         <ul id="fileList">
             {{range .}}
             <li>
-                <a href="/download?id={{.Id}}">{{.Name}}</a>
-                <form action="/move" method="post">
-                    <input type="hidden" name="id" value="{{.Id}}">
-                    <label for="parentID">Move to folder:</label>
-                    <input type="text" id="parentID" name="parentID" placeholder="Enter parent folder ID">
-                    <button type="submit">Move</button>
-                </form>
-                <form action="/rename" method="post">
-                    <input type="hidden" name="id" value="{{.Id}}">
-                    <label for="newName">New name:</label>
-                    <input type="text" id="newName" name="newName" placeholder="Enter new name">
-                    <button type="submit">Rename</button>
-                </form>
-                <form action="/delete" method="post">
-                    <input type="hidden" name="id" value="{{.Id}}">
-                    <button type="submit">Delete</button>
-                </form>
+                {{if eq .MimeType "application/vnd.google-apps.folder"}}
+                    <a href="/folder?id={{.Id}}">{{.Name}}</a>
+                {{else}}
+                    <a href="/download?id={{.Id}}">{{.Name}}</a>
+                {{end}}
             </li>
             {{end}}
         </ul>
-        <h2>Upload File</h2>
-        <input type="file" id="fileInput">
-        <button onclick="uploadFile()">Upload</button>
     </div>
     <script src="/static/scripts.js"></script>
 </body>
@@ -252,5 +250,5 @@ func renderHTML(w http.ResponseWriter, files []*drive.File) {
 	</html>
 	`
 	tmpl := template.Must(template.New("index").Parse(html))
-	tmpl.Execute(w, files)
+	tmpl.Execute(w, items)
 }
