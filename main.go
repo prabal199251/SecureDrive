@@ -11,6 +11,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
@@ -23,11 +24,26 @@ var db *sql.DB
 
 func init() {
 	var err error
-	// MySQL credentials and database name
-	db, err = sql.Open("mysql", "root:Prabal@123@tcp(localhost:3306)/KEYRING")
-	if err != nil {
-		log.Fatalf("Error opening database: %v", err)
-	}
+
+    // Load environment variables from .env file
+    if err := godotenv.Load(); err != nil {
+        log.Fatalf("Error loading .env file: %v", err)
+    }
+
+    // Read environment variables
+    dbUser := os.Getenv("DB_USER")
+    dbPassword := os.Getenv("DB_PASSWORD")
+    dbHost := os.Getenv("DB_HOST")
+    dbName := os.Getenv("DB_NAME")
+
+	// Construct database connection string
+    dbDSN := fmt.Sprintf("%s:%s@tcp(%s)/%s", dbUser, dbPassword, dbHost, dbName)
+
+    // Connect to MySQL database
+    db, err = sql.Open("mysql", dbDSN)
+    if err != nil {
+        log.Fatalf("Error opening database: %v", err)
+    }
 
 	// Ensure the database connection is valid
 	err = db.Ping()
@@ -48,11 +64,16 @@ func init() {
 }
 
 func main() {
+	// Read environment variables
+    clientID := os.Getenv("GOOGLE_CLIENT_ID")
+    clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	redirectURL := os.Getenv("GOOGLE_REDIRECT_URL")
+
 	// Set up OAuth2 configuration
 	oauthConfig := &oauth2.Config{
-		ClientID:     "707223796998-csu5jm55tohljkubhd0oq5cckomhtqcm.apps.googleusercontent.com",
-		ClientSecret: "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",
-		RedirectURL:  "http://localhost:8080/oauth2callback",
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  redirectURL,
 		Scopes:       []string{drive.DriveScope},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://accounts.google.com/o/oauth2/auth",
