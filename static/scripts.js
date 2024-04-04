@@ -119,5 +119,12 @@ function deleteFile(fileID) {
         .catch(error => console.error('Error deleting file:', error));
 }
 
+function setPassword() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const folderID = urlParams.get('id');
+    if (folderID) {
+        window.location.href = `/setPassword?id=${folderID}`;
+    }
+}
 
 window.onload = fetchFiles;

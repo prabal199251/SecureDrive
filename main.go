@@ -189,6 +189,41 @@ func main() {
 	})
 
 	http.HandleFunc("/setPassword", func(w http.ResponseWriter, r *http.Request) {
+
+		var err error
+		db, err = sql.Open("mysql", "root:password@tcp(localhost:3306)/KEYRING")
+		if err != nil {
+			log.Fatalf("Error opening database: %v", err)
+		}
+
+		// Retrieve folder ID from URL query parameters
+		folderID := r.URL.Query().Get("id")
+		if folderID == "" {
+			http.Error(w, "Folder ID not provided", http.StatusBadRequest)
+			return
+		}
+
+		//If it's a GET request, render the form to set the password
+		if r.Method == http.MethodGet {
+			// Render form to set password
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `
+				<html>
+				<head><title>Set Password for Folder</title></head>
+				<body>
+				<h1>Set Password for Folder ID: %s</h1>
+				<form method="POST" action="/setPassword?id=%s">
+					<input type="hidden" id="folderID" name="folderID" value="%s">
+					<label for="password">Password:</label><br>
+					<input type="password" id="password" name="password"><br>
+					<input type="submit" value="Set Password">
+				</form>
+				</body>
+				</html>
+			`, folderID, folderID, folderID)
+		}
+		
+		// Handle POST request to save the password
 		if r.Method == http.MethodPost {
 			// Parse form data
 			err := r.ParseForm()
@@ -197,52 +232,39 @@ func main() {
 				return
 			}
 	
-			// Retrieve folder ID from URL query parameters
-			folderID := r.URL.Query().Get("id")
-	
 			// Retrieve password from form data
-			password := r.Form.Get("password")
-	
-			// Check if folder ID or password is empty
-			if folderID == "" || password == "" {
-				http.Error(w, "Folder ID or password cannot be empty", http.StatusBadRequest)
+			password := r.FormValue("password")
+			
+			// Check if password is empty
+			if password == "" {
+				http.Error(w, "Password cannot be empty", http.StatusBadRequest)
 				return
 			}
-	
-			// Check if folder already has a password set
-			if isFolderLocked(folderID) {
-				http.Error(w, "Folder already has a password set", http.StatusBadRequest)
-				return
-			}
-	
-			// Store folder ID and password in the database
-			_, err = db.Exec("INSERT INTO folders (id, password) VALUES (?, ?)", folderID, password)
+			
+			// Insert password into the database
+			query := "INSERT INTO `folders` (`id`, `password`) VALUES (?, ?)"
+			insertResult, err := db.ExecContext(context.Background(), query, folderID, password)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
 				return
 			}
-	
-			fmt.Fprintf(w, "Password set successfully for folder ID: %s", folderID)
+
+			// Retrieve last inserted ID
+			id, err := insertResult.LastInsertId()
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to retrieve last inserted ID: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			fmt.Fprintf(w, "Password set successfully for folder ID: %s, inserted ID: %d", folderID, id)
 			return
 		}
-	
-		// Render form to set password
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, `
-			<html>
-			<head><title>Set Password for Folder</title></head>
-			<body>
-			<h1>Set Password for Folder</h1>
-			<form method="POST">
-				<input type="hidden" id="folderID" name="folderID" value="%s">
-				<label for="password">Password:</label><br>
-				<input type="password" id="password" name="password"><br>
-				<input type="submit" value="Set Password">
-			</form>
-			</body>
-			</html>
-		`, r.URL.Query().Get("id"))
-	})
+	})	
 
 	http.HandleFunc("/oauth2callback", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
@@ -453,6 +475,11 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 					</li>
 					{{end}}
 				</ul>
+			</div>
+		</div>
+
+		<div class="container1">
+			<button onclick="setPassword()">Set Password</button>
 		</div>
 
 		<script src="/static/scripts.js"></script>
