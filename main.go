@@ -97,38 +97,6 @@ func main() {
 		renderHTML(w, items)
 	})
 
-	http.HandleFunc("/move", func(w http.ResponseWriter, r *http.Request) {
-		fileID := r.URL.Query().Get("id")
-		newParentID := r.URL.Query().Get("parentID")
-		err := moveFile(fileID, newParentID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Unable to move file: %v", err), http.StatusInternalServerError)
-			return
-		}
-		fmt.Fprintf(w, "File moved successfully")
-	})
-
-	http.HandleFunc("/rename", func(w http.ResponseWriter, r *http.Request) {
-		fileID := r.URL.Query().Get("id")
-		newName := r.URL.Query().Get("name")
-		err := renameFile(fileID, newName)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Unable to rename file: %v", err), http.StatusInternalServerError)
-			return
-		}
-		fmt.Fprintf(w, "File renamed successfully")
-	})
-
-	http.HandleFunc("/delete", func(w http.ResponseWriter, r *http.Request) {
-		fileID := r.URL.Query().Get("id")
-		err := deleteFile(fileID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Unable to delete file: %v", err), http.StatusInternalServerError)
-			return
-		}
-		fmt.Fprintf(w, "File deleted successfully")
-	})
-
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
 		file, header, err := r.FormFile("file")
 		if err != nil {
@@ -215,12 +183,6 @@ func main() {
 
 	http.HandleFunc("/setPassword", func(w http.ResponseWriter, r *http.Request) {
 
-		// var err error
-		// db, err = sql.Open("mysql", "root:password@tcp(localhost:3306)/KEYRING")
-		// if err != nil {
-		// 	log.Fatalf("Error opening database: %v", err)
-		// }
-
 		// Retrieve folder ID from URL query parameters
 		folderID := r.URL.Query().Get("id")
 		if folderID == "" {
@@ -266,6 +228,7 @@ func main() {
 				return
 			}
 
+			// Insert password into the database
 			if isFolderLocked(folderID) {
 				updateQuery := "UPDATE `folders` SET `password` = ? WHERE `id` = ?"
 				_, err := db.ExecContext(context.Background(), updateQuery, password, folderID)
@@ -282,18 +245,7 @@ func main() {
 				}
 			}
 
-			// Insert password into the database
-			
-
-			// Retrieve last inserted ID
-			// id, err := insertResult.LastInsertId()
-			// if err != nil {
-			// 	http.Error(w, fmt.Sprintf("Failed to retrieve last inserted ID: %v", err), http.StatusInternalServerError)
-			// 	return
-			// }
-
 			w.Header().Set("Content-Type", "text/html")
-			// fmt.Fprintf(w, "Password set successfully for folder ID: %s, inserted ID: %d\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID, id)
 			fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
 
 			return
@@ -321,8 +273,6 @@ func main() {
 	// Serve static files
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
-
-	//http.HandleFunc("/createPassword", createPassword)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -375,22 +325,6 @@ func downloadFile(fileID string) (string, error) {
 	return file.Name, nil
 }
 
-func moveFile(fileID, newParentID string) error {
-	_, err := srv.Files.Update(fileID, nil).AddParents(newParentID).RemoveParents("").Do()
-	return err
-}
-
-func renameFile(fileID, newName string) error {
-	file := &drive.File{Name: newName}
-	_, err := srv.Files.Update(fileID, file).Fields("name").Do()
-	return err
-}
-
-func deleteFile(fileID string) error {
-	err := srv.Files.Delete(fileID).Do()
-	return err
-}
-
 func isFolderLocked(folderID string) bool {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM folders WHERE id = ?", folderID).Scan(&count)
@@ -409,62 +343,6 @@ func unlockFolder(folderID, password string) bool {
 	}
 	return password == storedPassword
 }
-
-/*
-func createPassword(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		// Parse form data
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Failed to parse form data", http.StatusBadRequest)
-			return
-		}
-
-		// Retrieve folder ID and password from form data
-		folderID := r.Form.Get("folderID")
-		password := r.Form.Get("password")
-
-		// Check if folder ID or password is empty
-		if folderID == "" || password == "" {
-			http.Error(w, "Folder ID or password cannot be empty", http.StatusBadRequest)
-			return
-		}
-
-		// Check if folder already has a password set
-		if isFolderLocked(folderID) {
-			http.Error(w, "Folder already has a password set", http.StatusBadRequest)
-			return
-		}
-
-		// Store folder ID and password in the database
-		_, err = db.Exec("INSERT INTO folders (id, password) VALUES (?, ?)", folderID, password)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		fmt.Fprintf(w, "Password set successfully for folder ID: %s", folderID)
-		return
-	}
-
-	// Render form to set password
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, `
-        <html>
-        <head><title>Set Password for Folder</title></head>
-        <body>
-        <h1>Set Password for Folder</h1>
-        <form method="POST">
-            <label for="folderID">Folder ID:</label><br>
-            <input type="text" id="folderID" name="folderID"><br>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password"><br>
-            <input type="submit" value="Set Password">
-        </form>
-        </body>
-        </html>
-    `)
-}*/
 
 func renderHTML(w http.ResponseWriter, items []*drive.File) {
 	html := `
