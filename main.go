@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
@@ -23,7 +24,7 @@ var db *sql.DB
 func init() {
 	var err error
 	// MySQL credentials and database name
-	db, err = sql.Open("mysql", "root:password@tcp(localhost:3306)/KEYRING")
+	db, err = sql.Open("mysql", "root:Prabal@123@tcp(localhost:3306)/KEYRING")
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
@@ -160,8 +161,11 @@ func main() {
 					renderHTML(w, items)
 					return
 				}
+
 				// If password is incorrect, display an error message
-				http.Error(w, "Incorrect password", http.StatusUnauthorized)
+				fmt.Fprintf(w, `<p>Incorrect password</p>`)
+				fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/'}, 1000);</script>`)
+
 				return
 			}
 
@@ -190,11 +194,11 @@ func main() {
 
 	http.HandleFunc("/setPassword", func(w http.ResponseWriter, r *http.Request) {
 
-		var err error
-		db, err = sql.Open("mysql", "root:password@tcp(localhost:3306)/KEYRING")
-		if err != nil {
-			log.Fatalf("Error opening database: %v", err)
-		}
+		// var err error
+		// db, err = sql.Open("mysql", "root:password@tcp(localhost:3306)/KEYRING")
+		// if err != nil {
+		// 	log.Fatalf("Error opening database: %v", err)
+		// }
 
 		// Retrieve folder ID from URL query parameters
 		folderID := r.URL.Query().Get("id")
@@ -222,7 +226,7 @@ func main() {
 				</html>
 			`, folderID, folderID, folderID)
 		}
-		
+
 		// Handle POST request to save the password
 		if r.Method == http.MethodPost {
 			// Parse form data
@@ -231,16 +235,16 @@ func main() {
 				http.Error(w, "Failed to parse form data", http.StatusBadRequest)
 				return
 			}
-	
+
 			// Retrieve password from form data
 			password := r.FormValue("password")
-			
+
 			// Check if password is empty
 			if password == "" {
 				http.Error(w, "Password cannot be empty", http.StatusBadRequest)
 				return
 			}
-			
+
 			// Insert password into the database
 			query := "INSERT INTO `folders` (`id`, `password`) VALUES (?, ?)"
 			insertResult, err := db.ExecContext(context.Background(), query, folderID, password)
@@ -256,15 +260,12 @@ func main() {
 				return
 			}
 
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
-				return
-			}
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, "Password set successfully for folder ID: %s, inserted ID: %d\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID, id)
 
-			fmt.Fprintf(w, "Password set successfully for folder ID: %s, inserted ID: %d", folderID, id)
 			return
 		}
-	})	
+	})
 
 	http.HandleFunc("/oauth2callback", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
