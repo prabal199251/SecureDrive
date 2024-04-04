@@ -245,23 +245,35 @@ func main() {
 				return
 			}
 
-			// Insert password into the database
-			query := "INSERT INTO `folders` (`id`, `password`) VALUES (?, ?)"
-			insertResult, err := db.ExecContext(context.Background(), query, folderID, password)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
-				return
+			if isFolderLocked(folderID) {
+				updateQuery := "UPDATE `folders` SET `password` = ? WHERE `id` = ?"
+				_, err := db.ExecContext(context.Background(), updateQuery, password, folderID)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error updating password: %v", err), http.StatusInternalServerError)
+					return
+				}
+			} else {
+				query := "INSERT INTO `folders` (`id`, `password`) VALUES (?, ?)"
+				_, err := db.ExecContext(context.Background(), query, folderID, password)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
+					return
+				}
 			}
+
+			// Insert password into the database
+			
 
 			// Retrieve last inserted ID
-			id, err := insertResult.LastInsertId()
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to retrieve last inserted ID: %v", err), http.StatusInternalServerError)
-				return
-			}
+			// id, err := insertResult.LastInsertId()
+			// if err != nil {
+			// 	http.Error(w, fmt.Sprintf("Failed to retrieve last inserted ID: %v", err), http.StatusInternalServerError)
+			// 	return
+			// }
 
 			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprintf(w, "Password set successfully for folder ID: %s, inserted ID: %d\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID, id)
+			// fmt.Fprintf(w, "Password set successfully for folder ID: %s, inserted ID: %d\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID, id)
+			fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
 
 			return
 		}
