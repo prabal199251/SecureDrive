@@ -162,6 +162,11 @@ func main() {
 					<link rel="stylesheet" href="/static/styles.css">
 				</head>
 				<body>
+				<div>
+					<form action="http://localhost:8080">
+						<button type="submit">Home</button>
+					</form>
+				</div>
 				<div class="container1">
 					<p>Incorrect password</p>
 					<script>
@@ -187,6 +192,11 @@ func main() {
 				<link rel="stylesheet" href="/static/styles.css">
 			</head>
 			<body>
+			<div>
+				<form action="http://localhost:8080">
+					<button type="submit">Home</button>
+				</form>
+			</div>
 			<div class="container1">
 				<form method="POST">
 					<label for="password">Enter password to unlock folder:</label><br>
@@ -231,6 +241,11 @@ func main() {
 					<link rel="stylesheet" href="/static/styles.css">
 				</head>
 				<body>
+				<div>
+					<form action="http://localhost:8080">
+						<button type="submit">Home</button>
+					</form>
+				</div>
 				<div class="container1">
 					<h1>Set Password for Folder ID: %s</h1>
 					<form method="POST" action="/setPassword?id=%s">
@@ -303,6 +318,11 @@ func main() {
 					<link rel="stylesheet" href="/static/styles.css">
 				</head>
 				<body>
+				<div>
+					<form action="http://localhost:8080">
+						<button type="submit">Home</button>
+					</form>
+				</div>
 				<div class="container1">
 					<p>Password set successfully for folder ID: %s</p>
 					<script>
@@ -443,6 +463,12 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 		<script src="/static/scripts.js"></script>
 	</head>
 	<body>
+		<div>
+			<form action="http://localhost:8080">
+				<button type="submit">Home</button>
+			</form>
+		</div>
+
 		<div class="container1">
 			<h1>UPLOAD FILE</h1>
 			<input type="file" id="fileInput">
