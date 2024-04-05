@@ -266,6 +266,26 @@ func main() {
 		}
 	})
 
+	http.HandleFunc("/removePassword", func(w http.ResponseWriter, r *http.Request) {
+		folderID := r.FormValue("folderID")
+	
+		// Check if folderID is provided
+		if folderID == "" {
+			http.Error(w, "Folder ID not provided", http.StatusBadRequest)
+			return
+		}
+	
+		// Delete the folder from the database
+		_, err := db.Exec("DELETE FROM folders WHERE id = ?", folderID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error deleting folder: %v", err), http.StatusInternalServerError)
+			return
+		}
+	
+		// Redirect to the home page ("/")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+
 	http.HandleFunc("/oauth2callback", func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Query().Get("code")
 		token, err := oauthConfig.Exchange(ctx, code)
@@ -404,8 +424,14 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 			</div>
 		</div>
 
-		<div class="container1">
-			<button onclick="setPassword()">Set Password</button>
+		<div class="container">
+			<div>
+				<button onclick="setPassword()">Set Password</button>
+			</div>
+
+			<div>
+				<button onclick="removePassword()">Remove Password</button>
+			</div>
 		</div>
 
 		<script src="/static/scripts.js"></script>
