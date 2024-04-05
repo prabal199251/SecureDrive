@@ -152,8 +152,31 @@ func main() {
 				}
 
 				// If password is incorrect, display an error message
-				fmt.Fprintf(w, `<p>Incorrect password</p>`)
-				fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);</script>`, folderID)
+				// fmt.Fprintf(w, `<p>Incorrect password</p>`)
+				// fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);</script>`, folderID)
+				
+				fmt.Fprintf(w, `
+				<html>
+				<head>
+					<title>Incorrect Password Redirect</title>
+					<link rel="stylesheet" href="/static/styles.css">
+				</head>
+				<body>
+				<div>
+					<form action="http://localhost:8080">
+						<button type="submit">Home</button>
+					</form>
+				</div>
+				<div class="container1">
+					<p>Incorrect password</p>
+					<script>
+						setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);
+					</script>
+				</div>
+				</body>
+				</html>
+				`, folderID)
+
 
 				return
 			}
@@ -163,11 +186,26 @@ func main() {
 
 			// Render a form to enter the password
 			fmt.Fprintf(w, `
+			<html>
+			<head>
+				<title>Set Password for Folder</title>
+				<link rel="stylesheet" href="/static/styles.css">
+			</head>
+			<body>
+			<div>
+				<form action="http://localhost:8080">
+					<button type="submit">Home</button>
+				</form>
+			</div>
+			<div class="container1">
 				<form method="POST">
 					<label for="password">Enter password to unlock folder:</label><br>
 					<input type="password" id="password" name="password"><br>
 					<input type="submit" value="Submit">
 				</form>
+			</div>
+			</body>
+			</html>
 			`)
 			return
 		}
@@ -198,15 +236,25 @@ func main() {
 			w.Header().Set("Content-Type", "text/html")
 			fmt.Fprintf(w, `
 				<html>
-				<head><title>Set Password for Folder</title></head>
+				<head>
+					<title>Set Password for Folder</title>
+					<link rel="stylesheet" href="/static/styles.css">
+				</head>
 				<body>
-				<h1>Set Password for Folder ID: %s</h1>
-				<form method="POST" action="/setPassword?id=%s">
-					<input type="hidden" id="folderID" name="folderID" value="%s">
-					<label for="password">Password:</label><br>
-					<input type="password" id="password" name="password"><br>
-					<input type="submit" value="Set Password">
-				</form>
+				<div>
+					<form action="http://localhost:8080">
+						<button type="submit">Home</button>
+					</form>
+				</div>
+				<div class="container1">
+					<h1>Set Password for Folder ID: %s</h1>
+					<form method="POST" action="/setPassword?id=%s">
+						<input type="hidden" id="folderID" name="folderID" value="%s">
+						<label for="password">Password:</label><br>
+						<input type="password" id="password" name="password"><br>
+						<input type="submit" value="Set Password">
+					</form>
+				</div>
 				</body>
 				</html>
 			`, folderID, folderID, folderID)
@@ -260,8 +308,33 @@ func main() {
 				}
 			}
 
-			w.Header().Set("Content-Type", "text/html")
-			fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
+			// w.Header().Set("Content-Type", "text/html")
+			// fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
+			
+			fmt.Fprintf(w, `
+				<html>
+				<head>
+					<title>Successful Password Redirect</title>
+					<link rel="stylesheet" href="/static/styles.css">
+				</head>
+				<body>
+				<div>
+					<form action="http://localhost:8080">
+						<button type="submit">Home</button>
+					</form>
+				</div>
+				<div class="container1">
+					<p>Password set successfully for folder ID: %s</p>
+					<script>
+						setTimeout(function(){window.location.href='/'}, 1000);
+					</script>
+				</div>
+				</body>
+				</html>
+			`, folderID)
+			
+			
+			
 			return
 		}
 	})
@@ -390,6 +463,12 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 		<script src="/static/scripts.js"></script>
 	</head>
 	<body>
+		<div>
+			<form action="http://localhost:8080">
+				<button type="submit">Home</button>
+			</form>
+		</div>
+
 		<div class="container1">
 			<h1>UPLOAD FILE</h1>
 			<input type="file" id="fileInput">
