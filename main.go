@@ -153,7 +153,7 @@ func main() {
 
 				// If password is incorrect, display an error message
 				fmt.Fprintf(w, `<p>Incorrect password</p>`)
-				fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/'}, 1000);</script>`)
+				fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);</script>`, folderID)
 
 				return
 			}
