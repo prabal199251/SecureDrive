@@ -58,4 +58,28 @@ function setPassword() {
     }
 }
 
+function removePassword() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const formData = new FormData();
+    const folderID = urlParams.get('id');
+    if (folderID) {
+        formData.append('folderID', folderID);
+
+        fetch('/removePassword', {
+            method: 'POST',
+            body: formData
+        })
+        // fetch(`/removePassword?id=${folderID}`)
+            .then(response => {
+                if (response.ok) {
+                    console.log('Password removed successfully');
+                    // Optionally, you can add code here to update the UI or perform any other actions after password removal.
+                } else {
+                    console.error('Failed to remove password');
+                }
+            })
+            .catch(error => console.error('Error removing password:', error));
+    }
+}
+
 window.onload = fetchFiles;

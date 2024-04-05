@@ -153,7 +153,7 @@ func main() {
 
 				// If password is incorrect, display an error message
 				fmt.Fprintf(w, `<p>Incorrect password</p>`)
-				fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/'}, 1000);</script>`)
+				fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);</script>`, folderID)
 
 				return
 			}
@@ -190,6 +190,8 @@ func main() {
 			return
 		}
 
+		isLocked := isFolderLocked(folderID)
+		
 		//If it's a GET request, render the form to set the password
 		if r.Method == http.MethodGet {
 			// Render form to set password
@@ -228,8 +230,21 @@ func main() {
 				return
 			}
 
+			if isLocked {
+				// Render confirmation prompt
+				w.Header().Set("Content-Type", "text/html")
+				fmt.Fprintf(w, `
+				<script>
+					const cnfstatus = confirm("Folder is already locked. Do you want to update the password?");
+					if (!cnfstatus) {
+						window.location.href = '/folder?id=%s';
+					}
+				</script>
+				`, folderID)
+			}
+
 			// Insert password into the database
-			if isFolderLocked(folderID) {
+			if isLocked {
 				updateQuery := "UPDATE `folders` SET `password` = ? WHERE `id` = ?"
 				_, err := db.ExecContext(context.Background(), updateQuery, password, folderID)
 				if err != nil {
@@ -247,9 +262,28 @@ func main() {
 
 			w.Header().Set("Content-Type", "text/html")
 			fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
-
 			return
 		}
+	})
+
+	http.HandleFunc("/removePassword", func(w http.ResponseWriter, r *http.Request) {
+		folderID := r.FormValue("folderID")
+	
+		// Check if folderID is provided
+		if folderID == "" {
+			http.Error(w, "Folder ID not provided", http.StatusBadRequest)
+			return
+		}
+	
+		// Delete the folder from the database
+		_, err := db.Exec("DELETE FROM folders WHERE id = ?", folderID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error deleting folder: %v", err), http.StatusInternalServerError)
+			return
+		}
+	
+		// Redirect to the home page ("/")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 
 	http.HandleFunc("/oauth2callback", func(w http.ResponseWriter, r *http.Request) {
@@ -390,8 +424,14 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 			</div>
 		</div>
 
-		<div class="container1">
-			<button onclick="setPassword()">Set Password</button>
+		<div class="container">
+			<div>
+				<button onclick="setPassword()">Set Password</button>
+			</div>
+
+			<div>
+				<button onclick="removePassword()">Remove Password</button>
+			</div>
 		</div>
 
 		<script src="/static/scripts.js"></script>
