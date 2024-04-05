@@ -495,7 +495,12 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 					{{range .}}
 					<li>
 						{{if and (not (eq .MimeType "application/vnd.google-apps.folder")) (not (eq .MimeType "application/vnd.google-apps.shortcut"))}}
-						<a href="/download?id={{.Id}}">{{.Name}}</a>
+						
+							<p>{{.Name}}</p>
+							<button onclick="window.location.href = 'https://drive.google.com/file/d/' + '{{.Id}}' + '/view'">View</button>
+							<nsbp>
+							<button onclick="window.location.href = '/download?id=' + '{{.Id}}'">Download</button>
+
 						{{end}}
 					</li>
 					{{end}}
