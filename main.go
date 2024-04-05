@@ -190,6 +190,8 @@ func main() {
 			return
 		}
 
+		isLocked := isFolderLocked(folderID)
+		
 		//If it's a GET request, render the form to set the password
 		if r.Method == http.MethodGet {
 			// Render form to set password
@@ -228,8 +230,21 @@ func main() {
 				return
 			}
 
+			if isLocked {
+				// Render confirmation prompt
+				w.Header().Set("Content-Type", "text/html")
+				fmt.Fprintf(w, `
+				<script>
+					const cnfstatus = confirm("Folder is already locked. Do you want to update the password?");
+					if (!cnfstatus) {
+						window.location.href = '/folder?id=%s';
+					}
+				</script>
+				`, folderID)
+			}
+
 			// Insert password into the database
-			if isFolderLocked(folderID) {
+			if isLocked {
 				updateQuery := "UPDATE `folders` SET `password` = ? WHERE `id` = ?"
 				_, err := db.ExecContext(context.Background(), updateQuery, password, folderID)
 				if err != nil {
@@ -247,7 +262,6 @@ func main() {
 
 			w.Header().Set("Content-Type", "text/html")
 			fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
-
 			return
 		}
 	})
