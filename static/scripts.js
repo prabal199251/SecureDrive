@@ -29,11 +29,14 @@ function uploadFile() {
 
     // Get the current folder ID from the URL
     const urlParams = new URLSearchParams(window.location.search);
-    const currentFolderID = urlParams.get('id');
+    currentFolderID = urlParams.get('id');
+
+    if(currentFolderID==null) {
+        currentFolderID="._.";
+    }
 
     // Append the current folder ID to the upload request
     formData.append('folderID', currentFolderID);
-
     fetch('/upload', {
         method: 'POST',
         body: formData
