@@ -140,9 +140,11 @@ func main() {
 		if isFolderLocked(folderID) {
 			if r.Method == http.MethodPost {
 				password := r.FormValue("password")
+
 				if unlockFolder(folderID, password) {
 					// If password is correct, proceed to list items
 					items, err := listItems(folderID)
+
 					if err != nil {
 						http.Error(w, fmt.Sprintf("Unable to list items: %v", err), http.StatusInternalServerError)
 						return
@@ -152,9 +154,6 @@ func main() {
 				}
 
 				// If password is incorrect, display an error message
-				// fmt.Fprintf(w, `<p>Incorrect password</p>`)
-				// fmt.Fprintf(w, `<script>setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);</script>`, folderID)
-				
 				fmt.Fprintf(w, `
 				<html>
 				<head>
@@ -176,7 +175,6 @@ func main() {
 				</body>
 				</html>
 				`, folderID)
-
 
 				return
 			}
@@ -306,9 +304,6 @@ func main() {
 					return
 				}
 			}
-
-			// w.Header().Set("Content-Type", "text/html")
-			// fmt.Fprintf(w, "Password set successfully for folder ID: %s\n<script>setTimeout(function(){window.location.href='/'}, 1000);</script>", folderID)
 			
 			fmt.Fprintf(w, `
 				<html>
