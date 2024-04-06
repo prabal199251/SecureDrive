@@ -398,7 +398,13 @@ func listItems(parentID string) ([]*drive.File, error) {
 }
 
 func uploadFile(fileName string, file io.Reader, folderID string) (*drive.File, error) {
-	driveFile := &drive.File{Name: fileName, Parents: []string{folderID}} // Set the parent folder ID
+	var driveFile *drive.File
+	if folderID == "._." {
+		driveFile = &drive.File{Name: fileName}
+	} else {
+		driveFile = &drive.File{Name: fileName, Parents: []string{folderID}} // Set the parent folder ID
+	}
+
 	_, err := srv.Files.Create(driveFile).Media(file).Do()
 	if err != nil {
 		return nil, err
