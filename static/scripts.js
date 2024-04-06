@@ -76,7 +76,7 @@ function removePassword() {
             .then(response => {
                 if (response.ok) {
                     console.log('Password removed successfully');
-                    // Optionally, you can add code here to update the UI or perform any other actions after password removal.
+
                 } else {
                     console.error('Failed to remove password');
                 }
