@@ -159,15 +159,18 @@ func main() {
 				<head>
 					<title>Incorrect Password Redirect</title>
 					<link rel="stylesheet" href="/static/styles.css">
-				</head>
-				<body>
-				<div>
-					<form action="http://localhost:8080">
-						<button type="submit">Home</button>
-					</form>
+					<script src="https://kit.fontawesome.com/3180ecad3a.js" crossorigin="anonymous"></script>
+			</head>
+			<body>
+			<div class="navbar">
+				<div class="start">
+					<a href="http://localhost:8080">
+						<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+					</a>
 				</div>
-				<div class="container1">
-					<p>Incorrect password</p>
+			</div>
+				<div class="container2">
+					<h1>Incorrect password</h1>
 					<script>
 						setTimeout(function(){window.location.href='/folder?id=%s'}, 1000);
 					</script>
@@ -188,16 +191,20 @@ func main() {
 			<head>
 				<title>Set Password for Folder</title>
 				<link rel="stylesheet" href="/static/styles.css">
+				<script src="https://kit.fontawesome.com/3180ecad3a.js" crossorigin="anonymous"></script>
 			</head>
 			<body>
-			<div>
-				<form action="http://localhost:8080">
-					<button type="submit">Home</button>
-				</form>
+			<div class="navbar">
+				<div class="start">
+					<a href="http://localhost:8080">
+						<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+					</a>
+				</div>
 			</div>
-			<div class="container1">
+			<div class="container2">
 				<form method="POST">
-					<label for="password">Enter password to unlock folder:</label><br>
+					<br>
+					<label for="password"><h1>Enter password to unlock folder:</h1></label><br>
 					<input type="password" id="password" name="password"><br>
 					<input type="submit" value="Submit">
 				</form>
@@ -237,17 +244,20 @@ func main() {
 				<head>
 					<title>Set Password for Folder</title>
 					<link rel="stylesheet" href="/static/styles.css">
-				</head>
-				<body>
-				<div>
-					<form action="http://localhost:8080">
-						<button type="submit">Home</button>
-					</form>
+					<script src="https://kit.fontawesome.com/3180ecad3a.js" crossorigin="anonymous"></script>
+			</head>
+			<body>
+				<div class="navbar">
+					<div class="start">
+						<a href="http://localhost:8080">
+							<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+						</a>
+					</div>
 				</div>
-				<div class="container1">
-					<h1>Set Password</h1>
+				<div class="container2">
+					<h1>Set Password</h1><br>
 					<form method="POST" action="/setPassword?id=%s" id="passwordForm">
-						<label for="password">Password:</label><br>
+						<label for="password"><h1>Enter your Password:</h1></label><br>
 						<input type="password" id="password" name="password"><br>
 						<input type="submit" value="Set Password">
 					</form>
@@ -310,15 +320,18 @@ func main() {
 				<head>
 					<title>Successful Password Redirect</title>
 					<link rel="stylesheet" href="/static/styles.css">
+					<script src="https://kit.fontawesome.com/3180ecad3a.js" crossorigin="anonymous"></script>
 				</head>
 				<body>
-				<div>
-					<form action="http://localhost:8080">
-						<button type="submit">Home</button>
-					</form>
+				<div class="navbar">
+					<div class="start">
+						<a href="http://localhost:8080">
+							<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+						</a>
+					</div>
 				</div>
-				<div class="container1">
-					<p>Password set successfully</p>
+				<div class="container2">
+					<h1>Password set successfully</h1>
 					<script>
 						setTimeout(function(){window.location.href='/'}, 1000);
 					</script>
@@ -453,74 +466,113 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 	html := `
 	<!DOCTYPE html>
 	<html>
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Google Drive API Example</title>
-		<link rel="stylesheet" href="/static/styles.css">
-		<script src="/static/scripts.js"></script>
-	</head>
-	<body>
-		<div>
-			<form action="http://localhost:8080">
-				<button type="submit">Home</button>
-			</form>
-		</div>
+		<head>
 
-		<div class="container1">
-			<h1>UPLOAD FILE</h1>
-			<input type="file" id="fileInput">
-			<button onclick="uploadFile()">Upload</button>
-		</div>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<div class="container">
-			<div>
-				<h1>Folders in Google Drive</h1>
-				<ul id="fileList">
-					{{range .}}
-					<li>
-						{{if eq .MimeType "application/vnd.google-apps.folder"}}
-							<a href="/folder?id={{.Id}}">{{.Name}}</a>
-						{{end}}
-					</li>
-					{{end}}
-				</ul>
+			<title>
+				SecureDrive
+			</title>
+			<link rel="stylesheet" href="/static/styles.css">
+
+			<script src="/static/scripts.js"></script>
+			<script src="https://kit.fontawesome.com/3180ecad3a.js" crossorigin="anonymous"></script>
+		
+		</head>
+		<body>
+
+			<div class="navbar">
+
+				<div class="start">
+				<a href="http://localhost:8080">
+				<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;">SecureDrive</i>
+				</a>
+				</div>
+
+				<div class="end">
+					<button class="btn" onclick="setPassword()"><h4>set password</h4></button>
+					<button class="btn" onclick="removePassword()"><h4>remove password</h4></button>
+				</div>
+
 			</div>
 
-			<div>
-				<h1>Files in Google Drive</h1>
-				<ul id="fileList">
-					{{range .}}
-					<li>
-						{{if and (not (eq .MimeType "application/vnd.google-apps.folder")) (not (eq .MimeType "application/vnd.google-apps.shortcut"))}}
+			<div class="chat_bot">
+				<div class="row text-center">
+					<label class="button" for="upload">
+						<i class="fas fa-cloud-upload-alt fa-3x"></i>
+					</label>
+					<input id="upload" type="file" hidden />
+				</div>
+			</div>
+					
+			<div class="main">
+				<div class="container1">
+					<h1 class="title">Folders in Google Drive</h1>
+					<ul id="fileList" class="scrollable">
+
+						{{range .}}
 						
-							<p>{{.Name}}</p>
-							<button onclick="window.location.href = 'https://drive.google.com/file/d/' + '{{.Id}}' + '/view'">View</button>
-							<nsbp>
-							<button onclick="window.location.href = '/download?id=' + '{{.Id}}'">Download</button>
+							{{if eq .MimeType "application/vnd.google-apps.folder"}}
+							<li>
+								<a href="/folder?id={{.Id}}">{{.Name}}</a>
+							</li>
+							{{end}}
 
 						{{end}}
-					</li>
-					{{end}}
-				</ul>
+							
+					</ul>
+				</div>
+
+				<div class="container1">
+					<h1 class="title">Files in Google Drive</h1>
+					<ul id="fileList" class="scrollable">
+						
+						{{range .}}
+						<li class="list-item">
+
+							{{if and (not (eq .MimeType "application/vnd.google-apps.folder")) (not (eq .MimeType "application/vnd.google-apps.shortcut"))}}
+							
+								<div class="container">
+									<div class="setFile">{{.Name}}</div>
+
+									<div class="list-item-action">
+
+										<button class="btn-i" onclick="window.location.href = 'https://drive.google.com/file/d/' + '{{.Id}}' + '/view'">
+											<i class="fa-solid fa-eye"></i>
+										</button>
+										
+										<nsbp>
+										
+										<button class="btn-i" onclick="window.location.href = '/download?id=' + '{{.Id}}'">
+											<i class="fa-solid fa-download"></i>
+										</button>
+
+										</nsbp>
+
+									</div>
+								</div>
+
+							{{end}}
+
+						</li>
+						{{end}}
+
+					</ul>
+				</div>
+				
 			</div>
-		</div>
 
-		<div class="container">
-			<div>
-				<button onclick="setPassword()">Set Password</button>
-			</div>
+			<div id="particles-js"></div>
 
-			<div>
-				<button onclick="removePassword()">Remove Password</button>
-			</div>
-		</div>
-
-		<script src="/static/scripts.js"></script>
-	</body>
-
+			<script type="text/javascript" src="/static/particles.js"></script>
+			<script type="text/javascript" src="/static/app.js"></script>
+			<script src="/static/scripts.js"></script>
+		
+		</body>		
 	</html>
-	`
-	tmpl := template.Must(template.New("index").Parse(html))
-	tmpl.Execute(w, items)
-}
+		`
+		tmpl := template.Must(template.New("index").Parse(html))
+		tmpl.Execute(w, items)
+	}
+	
