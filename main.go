@@ -248,16 +248,29 @@ func main() {
 				</div>
 				<div class="container1">
 					<h1>Set Password for Folder ID: %s</h1>
-					<form method="POST" action="/setPassword?id=%s">
+					<form method="POST" action="/setPassword?id=%s" id="passwordForm"> <!-- Added id="passwordForm" -->
 						<input type="hidden" id="folderID" name="folderID" value="%s">
 						<label for="password">Password:</label><br>
 						<input type="password" id="password" name="password"><br>
 						<input type="submit" value="Set Password">
 					</form>
 				</div>
+				<script>
+					// Add event listener to form submission
+					document.getElementById("passwordForm").addEventListener("submit", function(event) {
+						// If folder is already locked, show confirmation prompt
+						if (%t) {
+							const cnfstatus = confirm("Folder is already locked. Do you want to update the password?");
+							if (!cnfstatus) {
+								event.preventDefault(); // Prevent form submission if user cancels the prompt
+								window.location.href = '/folder?id=%s';
+							}
+						}
+					});
+				</script>
 				</body>
 				</html>
-			`, folderID, folderID, folderID)
+			`, folderID, folderID, folderID, isLocked, folderID)
 		}
 
 		// Handle POST request to save the password
@@ -276,19 +289,6 @@ func main() {
 			if password == "" {
 				http.Error(w, "Password cannot be empty", http.StatusBadRequest)
 				return
-			}
-
-			if isLocked {
-				// Render confirmation prompt
-				w.Header().Set("Content-Type", "text/html")
-				fmt.Fprintf(w, `
-				<script>
-					const cnfstatus = confirm("Folder is already locked. Do you want to update the password?");
-					if (!cnfstatus) {
-						window.location.href = '/folder?id=%s';
-					}
-				</script>
-				`, folderID)
 			}
 
 			// Insert password into the database
