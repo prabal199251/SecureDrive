@@ -247,9 +247,8 @@ func main() {
 					</form>
 				</div>
 				<div class="container1">
-					<h1>Set Password for Folder ID: %s</h1>
-					<form method="POST" action="/setPassword?id=%s" id="passwordForm"> <!-- Added id="passwordForm" -->
-						<input type="hidden" id="folderID" name="folderID" value="%s">
+					<h1>Set Password</h1>
+					<form method="POST" action="/setPassword?id=%s" id="passwordForm">
 						<label for="password">Password:</label><br>
 						<input type="password" id="password" name="password"><br>
 						<input type="submit" value="Set Password">
@@ -270,7 +269,7 @@ func main() {
 				</script>
 				</body>
 				</html>
-			`, folderID, folderID, folderID, isLocked, folderID)
+			`, folderID, isLocked, folderID)
 		}
 
 		// Handle POST request to save the password
@@ -324,17 +323,15 @@ func main() {
 					</form>
 				</div>
 				<div class="container1">
-					<p>Password set successfully for folder ID: %s</p>
+					<p>Password set successfully</p>
 					<script>
 						setTimeout(function(){window.location.href='/'}, 1000);
 					</script>
 				</div>
 				</body>
 				</html>
-			`, folderID)
-			
-			
-			
+			`)
+	
 			return
 		}
 	})
