@@ -563,10 +563,6 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 				
 			</div>
 
-			<div id="particles-js"></div>
-
-			<script type="text/javascript" src="/static/particles.js"></script>
-			<script type="text/javascript" src="/static/app.js"></script>
 			<script src="/static/scripts.js"></script>
 		
 		</body>		
