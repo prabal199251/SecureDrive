@@ -498,12 +498,11 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 			</div>
 
 			<div class="chat_bot">
-				<div class="row text-center">
-					<label class="button" for="upload">
-						<i class="fas fa-cloud-upload-alt fa-3x"></i>
-					</label>
-					<input id="upload" type="file" hidden />
-				</div>
+				<form id="uploadForm" class="col text-center">
+					<label class="button" for="fileInput"><i class="fas fa-cloud-upload-alt fa-3x"></i></label>
+					<input id="fileInput" type="file" hidden>
+					<button type="submit" onclick="uploadFile()"><b>SUBMIT</b></button>
+				</form>
 			</div>
 					
 			<div class="main">
