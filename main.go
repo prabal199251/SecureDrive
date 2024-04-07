@@ -25,25 +25,25 @@ var db *sql.DB
 func init() {
 	var err error
 
-    // Load environment variables from .env file
-    if err := godotenv.Load(); err != nil {
-        log.Fatalf("Error loading .env file: %v", err)
-    }
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 
-    // Read environment variables
-    dbUser := os.Getenv("DB_USER")
-    dbPassword := os.Getenv("DB_PASSWORD")
-    dbHost := os.Getenv("DB_HOST")
-    dbName := os.Getenv("DB_NAME")
+	// Read environment variables
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbName := os.Getenv("DB_NAME")
 
 	// Construct database connection string
-    dbDSN := fmt.Sprintf("%s:%s@tcp(%s)/%s", dbUser, dbPassword, dbHost, dbName)
+	dbDSN := fmt.Sprintf("%s:%s@tcp(%s)/%s", dbUser, dbPassword, dbHost, dbName)
 
-    // Connect to MySQL database
-    db, err = sql.Open("mysql", dbDSN)
-    if err != nil {
-        log.Fatalf("Error opening database: %v", err)
-    }
+	// Connect to MySQL database
+	db, err = sql.Open("mysql", dbDSN)
+	if err != nil {
+		log.Fatalf("Error opening database: %v", err)
+	}
 
 	// Ensure the database connection is valid
 	err = db.Ping()
@@ -65,8 +65,8 @@ func init() {
 
 func main() {
 	// Read environment variables
-    clientID := os.Getenv("GOOGLE_CLIENT_ID")
-    clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 	redirectURL := os.Getenv("GOOGLE_REDIRECT_URL")
 
 	// Set up OAuth2 configuration
@@ -165,7 +165,7 @@ func main() {
 			<div class="navbar">
 				<div class="start">
 					<a href="http://localhost:8080">
-						<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+					<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;"><p  style="font-family: 'Times New Roman', Times, serif ;">&nbsp &nbsp &nbsp SecureDrive </p></i>
 					</a>
 				</div>
 			</div>
@@ -197,7 +197,7 @@ func main() {
 			<div class="navbar">
 				<div class="start">
 					<a href="http://localhost:8080">
-						<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+					<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;"><p  style="font-family: 'Times New Roman', Times, serif ;">&nbsp &nbsp &nbsp SecureDrive </p></i>
 					</a>
 				</div>
 			</div>
@@ -234,7 +234,7 @@ func main() {
 		}
 
 		isLocked := isFolderLocked(folderID)
-		
+
 		//If it's a GET request, render the form to set the password
 		if r.Method == http.MethodGet {
 			// Render form to set password
@@ -250,7 +250,7 @@ func main() {
 				<div class="navbar">
 					<div class="start">
 						<a href="http://localhost:8080">
-							<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+						<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;"><p  style="font-family: 'Times New Roman', Times, serif ;">&nbsp &nbsp &nbsp SecureDrive </p></i>
 						</a>
 					</div>
 				</div>
@@ -314,7 +314,7 @@ func main() {
 					return
 				}
 			}
-			
+
 			fmt.Fprintf(w, `
 				<html>
 				<head>
@@ -326,7 +326,7 @@ func main() {
 				<div class="navbar">
 					<div class="start">
 						<a href="http://localhost:8080">
-							<i class="fa-solid fa-house fa-2xl">SecureDrive</i>
+						<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;"><p  style="font-family: 'Times New Roman', Times, serif ;">&nbsp &nbsp &nbsp SecureDrive </p></i>
 						</a>
 					</div>
 				</div>
@@ -339,27 +339,27 @@ func main() {
 				</body>
 				</html>
 			`)
-	
+
 			return
 		}
 	})
 
 	http.HandleFunc("/removePassword", func(w http.ResponseWriter, r *http.Request) {
 		folderID := r.FormValue("folderID")
-	
+
 		// Check if folderID is provided
 		if folderID == "" {
 			http.Error(w, "Folder ID not provided", http.StatusBadRequest)
 			return
 		}
-	
+
 		// Delete the folder from the database
 		_, err := db.Exec("DELETE FROM folders WHERE id = ?", folderID)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error deleting folder: %v", err), http.StatusInternalServerError)
 			return
 		}
-	
+
 		// Redirect to the home page ("/")
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
@@ -486,7 +486,7 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 
 				<div class="start">
 				<a href="http://localhost:8080">
-				<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;">SecureDrive</i>
+				<i class="fa-solid fa-house fa-2xl" class = "logo-color" style="color: #ffffff;"><p  style="font-family: 'Times New Roman', Times, serif ;">&nbsp &nbsp &nbsp SecureDrive </p></i>
 				</a>
 				</div>
 
@@ -498,12 +498,11 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 			</div>
 
 			<div class="chat_bot">
-				<div class="row text-center">
-					<label class="button" for="upload">
-						<i class="fas fa-cloud-upload-alt fa-3x"></i>
-					</label>
-					<input id="upload" type="file" hidden />
-				</div>
+				<form id="uploadForm" class="col text-center">
+					<label class="button" for="fileInput"><i class="fas fa-cloud-upload-alt fa-3x"></i></label>
+					<input id="fileInput" type="file" hidden>
+					<button type="submit" onclick="uploadFile()"><b>SUBMIT</b></button>
+				</form>
 			</div>
 					
 			<div class="main">
@@ -568,7 +567,6 @@ func renderHTML(w http.ResponseWriter, items []*drive.File) {
 		</body>		
 	</html>
 		`
-		tmpl := template.Must(template.New("index").Parse(html))
-		tmpl.Execute(w, items)
-	}
-	
+	tmpl := template.Must(template.New("index").Parse(html))
+	tmpl.Execute(w, items)
+}
