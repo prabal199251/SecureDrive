@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 	"html/template"
@@ -291,6 +292,11 @@ func main() {
 
 			// Retrieve password from form data
 			password := r.FormValue("password")
+			h := sha256.New()
+			h.Write([]byte(password))
+			ds := h.Sum(nil)
+
+			hashedPassword := fmt.Sprintf("%x", ds)
 
 			// Check if password is empty
 			if password == "" {
@@ -301,14 +307,14 @@ func main() {
 			// Insert password into the database
 			if isLocked {
 				updateQuery := "UPDATE `folders` SET `password` = ? WHERE `id` = ?"
-				_, err := db.ExecContext(context.Background(), updateQuery, password, folderID)
+				_, err := db.ExecContext(context.Background(), updateQuery, hashedPassword, folderID)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error updating password: %v", err), http.StatusInternalServerError)
 					return
 				}
 			} else {
 				query := "INSERT INTO `folders` (`id`, `password`) VALUES (?, ?)"
-				_, err := db.ExecContext(context.Background(), query, folderID, password)
+				_, err := db.ExecContext(context.Background(), query, folderID, hashedPassword)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error setting password: %v", err), http.StatusInternalServerError)
 					return
@@ -459,7 +465,13 @@ func unlockFolder(folderID, password string) bool {
 	if err != nil {
 		return false // Folder not found or error retrieving password
 	}
-	return password == storedPassword
+	h := sha256.New()
+	h.Write([]byte(password))
+	ds := h.Sum(nil)
+
+	hashed_inputPassword := fmt.Sprintf("%x", ds)
+
+	return hashed_inputPassword == storedPassword
 }
 
 func renderHTML(w http.ResponseWriter, items []*drive.File) {
